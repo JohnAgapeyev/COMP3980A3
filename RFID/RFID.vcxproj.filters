@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Assignment1\Assignment1\ass1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DummyTerm_Definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -27,19 +24,19 @@
     <ClInclude Include="SerialCommPort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ass1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\Assignment1\Assignment1\menu.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
     <ResourceCompile Include="dummytermmenu.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="menu.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Assignment1\Assignment1\Ass1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -47,6 +44,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SerialCommPort.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Ass1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -110,17 +110,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Assignment1\Assignment1\ass1.h" />
+    <ClInclude Include="ass1.h" />
     <ClInclude Include="DummyTerm_Definitions.h" />
     <ClInclude Include="SerialCommApp.h" />
     <ClInclude Include="SerialCommPort.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\Assignment1\Assignment1\menu.rc" />
     <ResourceCompile Include="dummytermmenu.rc" />
+    <ResourceCompile Include="menu.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Assignment1\Assignment1\Ass1.cpp" />
+    <ClCompile Include="Ass1.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="SerialCommApp.cpp" />
     <ClCompile Include="SerialCommPort.cpp" />

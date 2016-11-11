@@ -1,0 +1,76 @@
+/*--------------------------------------------------------------------------------------------------------------------
+--SOURCE FILE:          menu.rc     A resource file defining the menu and its hierarchy.
+--
+--PROGRAM:              Ass1
+--
+--FUNCTIONS:
+--                      N/A
+--
+--DATE:                 October 3, 2016
+--
+--REVISIONS:            N\A
+--
+--DESIGNER:             John Agapeyev
+--
+--PROGRAMMER:           John Agapeyev
+--
+--NOTES:
+--      The resource file specifies the Win32 menu object, as well as the nested format it will be displayed in, and
+--      the macros that represent each meu item. These macros will be used in WndProc to determine which menu item was selected.
+----------------------------------------------------------------------------------------------------------------------*/
+
+#pragma once
+#include "ass1.h"
+
+MYMENU MENU {
+    POPUP "&Operation Mode" {
+        MENUITEM "&Command", IDM_COMMAND
+            MENUITEM "&Connect", IDM_CONNECT
+    }
+    POPUP "&Settings" {
+        POPUP "&Port" {
+            MENUITEM "&COM1", IDM_COM1
+                MENUITEM "&COM2", IDM_COM2
+                MENUITEM "&COM3", IDM_COM3
+                MENUITEM "&COM4", IDM_COM4
+        }
+        POPUP "&Bit Rate" {
+            MENUITEM "&110", IDM_110
+                MENUITEM "&300", IDM_300
+                MENUITEM "&600", IDM_600
+                MENUITEM "&1200", IDM_1200
+                MENUITEM "&2400", IDM_2400
+                MENUITEM "&4800", IDM_4800
+                MENUITEM "&9600", IDM_9600
+                MENUITEM "&14400", IDM_14400
+                MENUITEM "&19200", IDM_19200
+                MENUITEM "&38400", IDM_38400
+                MENUITEM "&57600", IDM_57600
+                MENUITEM "&115200", IDM_115200
+                MENUITEM "&128000", IDM_128000
+                MENUITEM "&256000", IDM_256000
+        }
+        POPUP "&Data Bit Size" {
+            MENUITEM "&4", IDM_DATA4
+                MENUITEM "&5", IDM_DATA5
+                MENUITEM "&6", IDM_DATA6
+                MENUITEM "&7", IDM_DATA7
+                MENUITEM "&8", IDM_DATA8
+        }
+        POPUP "&Stop Bit Size" {
+            MENUITEM "&1", IDM_STOP0
+                MENUITEM "&1.5", IDM_STOP1
+                MENUITEM "&2", IDM_STOP2
+        }
+        POPUP "&Parity Mode" {
+            MENUITEM "&None", IDM_PARITY0
+                MENUITEM "&Odd", IDM_PARITY1
+                MENUITEM "&Even", IDM_PARITY2
+                MENUITEM "&Mark", IDM_PARITY3
+                MENUITEM "&Space", IDM_PARITY4
+        }
+        MENUITEM "&Save", IDM_Save
+    }
+    MENUITEM "&Help", IDM_HELP
+        MENUITEM "&Exit", IDM_EXIT
+}
