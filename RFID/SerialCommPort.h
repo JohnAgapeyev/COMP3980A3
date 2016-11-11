@@ -4,8 +4,7 @@
 #include <string>
 #include <sstream>
 
-class SerialCommPort
-{
+class SerialCommPort {
 public:
     SerialCommPort();
     ~SerialCommPort();

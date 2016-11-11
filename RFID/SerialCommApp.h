@@ -6,14 +6,11 @@
 #include <sstream>
 #include "SerialCommPort.h"
 
-
 using std::string;
 
-class SerialCommApp
-{
+class SerialCommApp {
 public:
     SerialCommApp();
-    ~SerialCommApp();
 
     void setConnect(HWND);
     void setDisconnect();
