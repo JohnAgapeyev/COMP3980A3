@@ -1,6 +1,5 @@
 #include "controller.h"
 
-
 void Controller::switchButtonEnabled (HWND enabledButton, 
                           HWND disabledButton)
 {
@@ -16,7 +15,6 @@ void Controller::connectPort( /*pointer to the object that will connect to port*
     switchButtonEnabled (connectButton, disconnectButton);
 }
 
-
 void Controller::disconnectPort( /*pointer to the object that will disconnect form port*/
 								HWND connectButton,
 								HWND disconnectButton) {
@@ -30,34 +28,35 @@ LPCSTR Controller::configCommPortParams( WPARAM wParam) {
 }
 
 void Controller::displayTag ( HWND hDisplay,
-                              DWORD xPos,
+                              DWORD yPos,
                               string tag )
  {
-    DWORD yPos = 1; 
+    DWORD xPos = 1; 
     HDC hdc = GetDC(hDisplay);
-    GetTextMetrics(hdc, &tm);
-    TextOut(hdc, xPos,  yPos, tag.c_str() , tag.length() ); // output character    
+    TextOut(hdc, xPos , yPos , tag.c_str() , tag.length() ); // output character    
     ReleaseDC(hDisplay, hdc);
 }
 
-
-void Controller::displayErrorMessageBox (LPCTSTR text) 
-{
-    MessageBox(NULL, text, TEXT("ERROR"), MB_OK);
-}
-
 void Controller::repaintDisplay (HWND display, 
-                                 string * tags[],
+                                 string tags [] ,
                                  DWORD NumOfTags) 
 {
     InvalidateRect(display, NULL, TRUE);
-    DWORD xPos = 1;
-    for (int i = 0; i < NumOfTags; ++i)
-    {
-        displayTag (display, xPos, tags[i] ); 
+    DWORD yPos = 1;
+	TEXTMETRIC tm;
+	HDC hdc = GetDC(display);
+	GetTextMetrics(hdc, &tm);
+	DWORD yDiff = tm.tmHeight + tm.tmExternalLeading;
+	ReleaseDC(display, hdc);
     
-        HDC hdc = GetDC(display);
-        ReleaseDC(display, hdc);
+	for (int i = 0; i < NumOfTags; ++i)
+    {
+        displayTag (display, yPos , tags[i] );
+		yPos += yDiff;
     }
+}
 
+void Controller::displayErrorMessageBox(LPCTSTR text)
+{
+	MessageBox(NULL, text, TEXT("ERROR"), MB_OK);
 }
