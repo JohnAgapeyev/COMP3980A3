@@ -111,9 +111,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ass1.h" />
+    <ClInclude Include="Controller.h" />
+    <ClInclude Include="definitions.h" />
     <ClInclude Include="DummyTerm_Definitions.h" />
+    <ClInclude Include="Platform.h" />
     <ClInclude Include="SerialCommApp.h" />
     <ClInclude Include="SerialCommPort.h" />
+    <ClInclude Include="SkyeTekAPI.h" />
+    <ClInclude Include="SkyeTekProtocol.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="dummytermmenu.rc" />
@@ -121,7 +126,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Ass1.cpp" />
+    <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="RFID.cpp" />
     <ClCompile Include="SerialCommApp.cpp" />
     <ClCompile Include="SerialCommPort.cpp" />
   </ItemGroup>
