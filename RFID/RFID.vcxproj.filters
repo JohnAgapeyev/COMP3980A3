@@ -27,15 +27,6 @@
     <ClInclude Include="ass1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SkyeTekAPI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SkyeTekProtocol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Controller.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -114,11 +114,8 @@
     <ClInclude Include="Controller.h" />
     <ClInclude Include="definitions.h" />
     <ClInclude Include="DummyTerm_Definitions.h" />
-    <ClInclude Include="Platform.h" />
     <ClInclude Include="SerialCommApp.h" />
     <ClInclude Include="SerialCommPort.h" />
-    <ClInclude Include="SkyeTekAPI.h" />
-    <ClInclude Include="SkyeTekProtocol.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="dummytermmenu.rc" />
