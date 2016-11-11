@@ -15,38 +15,38 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\DummyTerminal_v2_SourceCode\SerialCommApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\DummyTerminal_v2_SourceCode\SerialCommPort.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Assignment1\Assignment1\ass1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\DummyTerminal_v2_SourceCode\DummyTerm_Definitions.h">
+    <ClInclude Include="DummyTerm_Definitions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SerialCommApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SerialCommPort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\DummyTerminal_v2_SourceCode\dummytermmenu.rc">
+    <ResourceCompile Include="..\..\Assignment1\Assignment1\menu.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="..\..\Assignment1\Assignment1\menu.rc">
+    <ResourceCompile Include="dummytermmenu.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\DummyTerminal_v2_SourceCode\Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\DummyTerminal_v2_SourceCode\SerialCommApp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\DummyTerminal_v2_SourceCode\SerialCommPort.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Assignment1\Assignment1\Ass1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialCommApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialCommPort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
