@@ -114,10 +114,12 @@
     <ClInclude Include="definitions.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="RFID.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="RFID.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RFIDMENU.rc" />
