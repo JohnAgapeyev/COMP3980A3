@@ -15,7 +15,7 @@ private:
                               HWND disabledButton);
 
 public:
-    Controller();
+    //Controller();
 
     LPCSTR configCommPortParams (WPARAM wParam); 
 
