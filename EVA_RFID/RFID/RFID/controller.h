@@ -44,3 +44,5 @@ public:
 	/** displays an error message **/
 	void displayErrorMessageBox(LPCTSTR text);
 };
+
+void readLoop();
