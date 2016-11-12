@@ -414,9 +414,11 @@ DWORD WINAPI readListen(LPVOID hwnd) {
     HDC hdc;
     static unsigned k = 0;
     OVERLAPPED over = {0};
-    over.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    over.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    SetCommMask(hComm, EV_RXCHAR);
     bool readPending = false;
     while (writeKeys) {
+        WaitCommEvent(hComm, nullptr, &over);
         if (ReadFile(hComm, str, 1, &success, &over)) {
             if (success) {
                 hdc = GetDC((HWND)hwnd);             // get device context
