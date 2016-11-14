@@ -2,14 +2,14 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "main.h"
-
 using namespace std;
+
+deque<string>  tagHist;
 
 int WINAPI WinMain(HINSTANCE hInst,
 				   HINSTANCE hPrevInst,
 				   LPSTR lspszCmdParam,
 				   int nCmdShow) {
-	HWND hwnd;
 	MSG msg;
 	WNDCLASSEX Wcl;
 
@@ -68,15 +68,15 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 
 	case WM_COMMAND:
 		if ((HWND)lParam == hConnectButton) {
-			controller.connectPort(hConnectButton, hDisconnectButton);
+			connectPort();
 			break;
 		}
 		if ((HWND)lParam == hDisconnectButton) {
-			controller.disconnectPort(hConnectButton, hDisconnectButton);
+			disconnectPort();
 			break;
 		}
 		else {
-			controller.configCommPortParams(wParam);
+			//HELP MENU
 		}
 		break;
 
@@ -85,11 +85,12 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 	case WM_KEYDOWN:
 		if ((char)wParam == 27) // if ESC is pressed
 		{
-			controller.disconnectPort(hConnectButton, hDisconnectButton);
+			disconnectPort();
 		}
 		break;
 	case WM_PAINT:
-		//controller.repaintDisplay();
+		UpdateWindow(tagDisplay);
+		UpdateWindow(tagHistDisplay);
 		break;
 	case WM_CLOSE:
 	case WM_DESTROY:
@@ -153,4 +154,262 @@ void createGUI(HWND hwnd) {
 									 NULL,
 									 NULL
 									 );
+}
+
+void switchButtonEnabled(HWND enabledButton,
+									 HWND disabledButton)
+{
+	EnableWindow(enabledButton, false);
+	EnableWindow(disabledButton, true);
+}
+
+void connectPort()
+{
+	connect();
+	switchButtonEnabled(hConnectButton, hDisconnectButton);
+}
+
+void disconnectPort() {
+	readLoopOn = false;
+	clearDisplay(tagDisplay,&tagDisplay_yPos);
+	clearDisplay(tagHistDisplay, nullptr);
+	switchButtonEnabled(hDisconnectButton, hConnectButton);
+}
+
+void displayTag(string tag)
+{
+	DWORD xPos = 1;
+	TEXTMETRIC tm;
+	HDC hdc = GetDC(tagDisplay);
+	GetTextMetrics(hdc, &tm);
+	DWORD yDiff = tm.tmHeight + tm.tmExternalLeading;
+	TextOut(hdc, xPos, tagDisplay_yPos, tag.c_str(), tag.length()); // output character    
+	ReleaseDC(tagDisplay, hdc);
+	tagDisplay_yPos += (tm.tmHeight + tm.tmExternalLeading);
+}
+
+void displayReader(string tag)
+{
+	DWORD xPos = 3;
+	TEXTMETRIC tm;
+	HDC hdc = GetDC(hwnd);
+	GetTextMetrics(hdc, &tm);
+	DWORD yDiff = tm.tmHeight + tm.tmExternalLeading;
+	TextOut(hdc, xPos, hwnd_yPos, tag.c_str(), tag.length()); // output character    
+	ReleaseDC(tagDisplay, hdc);
+	tagDisplay_yPos += (tm.tmHeight + tm.tmExternalLeading);
+}
+
+void addTagStrToHist(string tag) 
+{
+	if (tagHist.size() >= 15)
+	{
+		tagHist.pop_front();
+	}
+	tagHist.push_back(tag);
+	
+}
+
+void repaintDisplayHist()
+{
+	InvalidateRect(tagHistDisplay, NULL, TRUE);
+	DWORD yPos = 0, xPos = 0;
+	TEXTMETRIC tm;
+	HDC hdc = GetDC(tagHistDisplay);
+	GetTextMetrics(hdc, &tm);
+	DWORD yDiff = tm.tmHeight + tm.tmExternalLeading;
+	for (DWORD i = 0; i < tagHist.size() ; ++i)
+	{
+		TextOut(hdc, xPos, yPos, tagHist.at(i).c_str(), tagHist.at(i).length());
+		yPos += yDiff;
+	}
+	ReleaseDC(tagHistDisplay, hdc);
+}
+
+
+void displayErrorMessageBox(LPCTSTR text)
+{
+	MessageBox(NULL, text, TEXT("ERROR"), MB_OK);
+}
+
+BOOLEAN connectRFID()
+{
+	numOfDevices = SkyeTek_DiscoverDevices(&devices);
+	displayTag("Discovering device...");
+	if (numOfDevices)
+	{
+		numOfReaders = SkyeTek_DiscoverReaders(devices, numOfDevices, &readers);
+		if (numOfReaders == 0)
+		{
+			SkyeTek_FreeDevices(devices, numOfDevices);
+			numOfDevices = 0;
+			return false;
+			displayTag("Cannot detect reader.");
+		}
+		return true; 
+	}
+	displayTag("Cannot detect device.");
+	return false;
+}
+
+void connect()
+{
+	if (connectRFID()) {
+		DWORD threadID;
+		if (readers[0] != NULL)
+		{
+			readLoopOn = true;
+			hThread = CreateThread(NULL, 0, readLoop, nullptr, 0, &threadID);
+		}
+	}
+
+}
+
+DWORD WINAPI readLoop(LPVOID)
+{
+	while (readLoopOn)
+	{
+		SKYETEK_STATUS status;
+		LPSKYETEK_TAG * lptags = nullptr;
+		unsigned short numOfTags = 0;
+
+		status = SkyeTek_GetTags(readers[0], AUTO_DETECT, &lptags, &numOfTags);
+		if (numOfTags == 0 || status == SKYETEK_FAILURE)
+		{
+			clearDisplay(tagDisplay, &tagDisplay_yPos);
+		}
+		else
+		{
+			status = SkyeTek_SelectTags(readers[0], AUTO_DETECT, tagRead, 0, 1, NULL);
+		}
+		status = SkyeTek_FreeTags(readers[0], lptags, numOfTags);
+	}
+	disconnect();
+	CloseHandle(hThread);
+	return readLoopOn;
+}
+unsigned char tagRead(LPSKYETEK_TAG lptag, void* user) 
+{
+	stringstream ss;
+	string tagType = "";
+	string friendly = "";
+	friendly = friendlyToString(lptag);
+	tagType  = tagTypeToString(lptag);
+	
+	ss << "TAG :" <<  friendly  << " [" << tagType << "]";
+	
+	displayTag(ss.str());
+	addTagStrToHist(ss.str());
+	repaintDisplayHist();
+	ReadTagData(lptag);
+	return 0;
+}
+
+SKYETEK_STATUS ReadTagData(LPSKYETEK_TAG lpTag)
+{
+	unsigned short numOfTags = 0;
+	string tag;
+	stringstream ss;
+
+
+	displayTag("Reading tag data ...");
+
+	string dataStr = GetData(lpTag);
+	if (!dataStr.empty())
+	{
+		ss << dataStr;
+		tag = ss.str();
+		displayTag(tag);
+		return SKYETEK_SUCCESS;
+	}
+	ss << " read failure.";
+	displayTag(ss.str());
+
+	return SKYETEK_FAILURE;
+}
+
+
+string GetData(LPSKYETEK_TAG lptag)
+{
+	DWORD start = 1;
+	SKYETEK_STATUS status;
+	LPSKYETEK_STRING str = nullptr;
+	LPSKYETEK_DATA lpdata = NULL;
+	SKYETEK_ADDRESS addr;
+	stringstream ss;
+
+	addr.start  = start;
+	addr.blocks = 1;
+	while (addr.start < 10)
+	{
+		addr.start = ++start;
+		status = SkyeTek_ReadTagData(readers[0], lptag, &addr, 0, 0, &lpdata);
+		if (status == SKYETEK_SUCCESS)
+		{
+			str = SkyeTek_GetStringFromData(lpdata);
+			
+			if (str != nullptr)
+			{
+				string dstring = dataToString(lpdata);
+				ss << " Block " << start << ": " << str;
+			}
+		}
+	}
+	SkyeTek_FreeData(lpdata);
+	return ss.str();
+}
+
+string dataToString(LPSKYETEK_DATA lpdata)
+{
+	stringstream ss;
+	for (int i = 1; i < (sizeof(SkyeTek_GetStringFromData(lpdata)) * 8); i += 2)
+		{
+			ss << SkyeTek_GetStringFromData(lpdata) + i;
+		}
+	
+	return ss.str();
+}
+
+string friendlyToString(LPSKYETEK_TAG lpTag)
+{
+	const DWORD friendlyLen = 128;
+	stringstream ss;
+	
+	for (int i = 1; i < friendlyLen; i+=2)
+	{
+		ss << lpTag->friendly + i;
+	}
+	return ss.str();
+}
+
+string tagTypeToString(LPSKYETEK_TAG lpTag)
+{
+	stringstream ss;
+	for (int i = 0; i < (sizeof(SkyeTek_GetTagTypeNameFromType(lpTag->type)) * 16); i+=2)
+	{
+		ss << SkyeTek_GetTagTypeNameFromType(lpTag->type) + i;
+	}
+	return ss.str();
+}
+
+void disconnect()
+{
+	clearDisplay(tagDisplay, &tagDisplay_yPos);
+	clearDisplay(tagHistDisplay, nullptr);
+	tagHist.clear();
+	SkyeTek_FreeReaders(readers, numOfReaders);
+	SkyeTek_FreeDevices(devices, numOfDevices);
+	disconnectPort();
+}
+
+
+void clearDisplay(HWND wnd, DWORD * yPos)
+{
+	InvalidateRect(wnd, NULL, TRUE);
+	UpdateWindow(wnd);
+	if (yPos != nullptr)
+	{
+		*yPos = 0;
+	}
+	
 }

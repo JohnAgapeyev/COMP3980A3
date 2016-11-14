@@ -74,7 +74,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\Eva\Documents\CST\Semester3\COMP3980\Assignment\a3\COMP3980A3\EVA_RFID\RFID\RFID\SkyeTek_C_API_4.2;C:\Users\Eva\Documents\CST\Semester3\COMP3980\Assignment\a3\COMP3980A3\EVA_RFID\RFID\RFID\SkyeTek_C_API_4.2\Device;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link />
+    <Link>
+      <AdditionalLibraryDirectories>C:\Users\Eva\Documents\CST\Semester3\COMP3980\Assignment\a3\COMP3980A3\EVA_RFID\RFID\RFID\SkyeTek_C_API_4.2;C:\Users\Eva\Documents\CST\Semester3\COMP3980\Assignment\a3\COMP3980A3\EVA_RFID\RFID\RFID\SkyeTek_C_API_4.2\Device</AdditionalLibraryDirectories>
+      <AdditionalDependencies>stapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -110,16 +116,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="controller.h" />
     <ClInclude Include="definitions.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="RFID.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="RFID.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RFIDMENU.rc" />
