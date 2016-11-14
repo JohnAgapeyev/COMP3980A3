@@ -3,17 +3,17 @@
 /****************************************/
 /************** Headers *****************/
 /****************************************/
+/*~~~~~~~ ~WINDOWS/C++ ~~~~~~~*/
 #include <Windows.h>
 #include <string>
 #include <sstream>
 #include <deque>
 #include <tchar.h>
-
-
+/*~~~~~~~~~ SKYETEK ~~~~~~~~~~*/
 #include <platform.h>
 #include <SkyetekProtocol.h>
 #include <SkyeTekAPI.h>
-
+/*~~~~~~~~~~ LOCAL ~~~~~~~~~~*/
 #include "definitions.h"
 
 /*****************************************/
@@ -39,9 +39,11 @@ const DWORD CONNECT_BUTTON_Y		= 250;
 /****************************************/
 /************* DATA MEMBERS *************/
 /****************************************/
+
 static BOOLEAN readLoopOn;
 HANDLE hThread;
 
+/*~~~~~~~~ WINDOWS/VIEWS ~~~~~~~~*/
 HWND hwnd;
 HWND tagDisplay;
 HWND tagHistDisplay;
@@ -50,46 +52,54 @@ HWND hDisconnectButton;
 
 DWORD  tagDisplay_yPos = 0;
 DWORD  hwnd_yPos	   = 1;
-/****************************************/
-/*******  SKYETEK DATA MEMBERS **********/
-/****************************************/
 
+/*~~~~~~~~ SKYTEK DATA MEMBERS ~~~~~~~~*/
 LPSKYETEK_DEVICE myDevice;
 LPSKYETEK_DEVICE * devices = nullptr;
 LPSKYETEK_READER * readers = nullptr;
 SKYETEK_STATUS st;
 DWORD numOfDevices = 0, numOfReaders = 0;
 
-
 /****************************************/
 /*********  MEMBER FUNCTIONS ************/
 /****************************************/
 
-/*************************************/
+/*~~~~~~~~~~~~~~~~~~~~~~~~ COMMAND ~~~~~~~~~~~~~~~~~~~~~~~~*/
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 bool setConfigParams(HWND, UINT, WPARAM, LPARAM);
 void createGUI(HWND);
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~ DISPLAY ~~~~~~~~~~~~~~~~~~~~~~~~*/
 void switchButtonEnabled(HWND,HWND);
-void connectPort(); /*connects to the port and changes the buttons*/
-void disconnectPort(); /*changes the flag to disconnect from 
-						 the port and changes the buttons*/
 
-void displayReader(std::string);
-void displayTag(std::string); /*displays a single tag*/
-void addTagStrToHist(std::string); /*displays a set of tags*/
-void repaintDisplayHist(); /*clears a display and resets the Y value*/
-void clearDisplay(HWND, DWORD *);
-void displayErrorMessageBox(LPCTSTR); /** displays an error message **/
+void displayReader(std::string);	/* displays reader status */
+void displayTag(std::string);       /* displays a single tag */
+void addTagStrToHist(std::string);  /* displays a set of tags */
+void repaintDisplayHist();			/* clears a display and resets the Y value */
+void clearDisplay(HWND, DWORD *);	/* Clears the window and resets the 
+									value of the yPos(if not nullptr)*/
+void displayErrorMessageBox(LPCTSTR); /* displays an error message */
 
-void connect();
-BOOLEAN connectRFID();
-DWORD WINAPI readLoop(LPVOID);
-unsigned char tagRead(LPSKYETEK_TAG, void* );
-SKYETEK_STATUS ReadTagData(LPSKYETEK_TAG);
-void disconnect();
+/*~~~~~~~~~~~~~~~~~~~~~~~~ HELP ~~~~~~~~~~~~~~~~~~~~~~~~*/
+void showHelp();					/* for help menu button */
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~ CONNECTED ~~~~~~~~~~~~~~~~~~~~~~~~*/
+void connectPort(); /*Called on button clck to connects to
+					the device, changes the buttons*/
+void disconnectPort(); /*changes the flag to disconnect from
+					   the port and changes the buttons*/
+void connect();						/*Connects to the starts thread*/
+BOOLEAN connectRFID();				/*Connects to RFID device*/
+DWORD WINAPI readLoop(LPVOID);		/*the ASYNC thread loop to read tags*/
+unsigned char tagRead(LPSKYETEK_TAG, void* ); /*reads tags and outputs 
+											  tag info and ID */
+SKYETEK_STATUS ReadTagData(LPSKYETEK_TAG);	 /*Outputs tagdata from 
+										      block 1 - 10 */
+void disconnect();				   /*frees the reader and device*/								
+
+/*~~~~~~~~~~~~ TO STRING DISPLAY HELPERS ~~~~~~~~~~~~~~~~~~~~*/
 //To String functions to parse the 16-bit uncode null characters 
-std::string  GetData(LPSKYETEK_TAG);
+std::string  GetData(LPSKYETEK_TAG); 
 std::string  tagTypeToString(LPSKYETEK_TAG);
 std::string  friendlyToString(LPSKYETEK_TAG);
 std::string  dataToString(LPSKYETEK_DATA);

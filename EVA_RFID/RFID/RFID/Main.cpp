@@ -2,9 +2,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "main.h"
-using namespace std;
 
-deque<string>  tagHist;
+using namespace std;
+deque<string>  tagHist; //holds a history of tags
 
 int WINAPI WinMain(HINSTANCE hInst,
 				   HINSTANCE hPrevInst,
@@ -75,11 +75,19 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 			disconnectPort();
 			break;
 		}
-		else {
-			//HELP MENU
+		if (LOWORD(wParam) == IDM_HELP)
+		{
+			showHelp();
+		}
+		if (LOWORD(wParam) == IDM_EXIT)
+		{
+			if (readLoopOn)
+			{
+				disconnectPort();
+			}
+			PostQuitMessage(0);
 		}
 		break;
-
 	case WM_SYSKEYDOWN:
 	case WM_CHAR:
 	case WM_KEYDOWN:
@@ -87,10 +95,6 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 		{
 			disconnectPort();
 		}
-		break;
-	case WM_PAINT:
-		UpdateWindow(tagDisplay);
-		UpdateWindow(tagHistDisplay);
 		break;
 	case WM_CLOSE:
 	case WM_DESTROY:
@@ -100,6 +104,23 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 		return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
 	return response;
+}
+void showHelp()
+{
+	LPCSTR help = 
+"Hardware Requirements:\n\
+  - Windows 10 64- bit OS\n\
+  - Skyetek RFID M7 or M9 device.\n\
+\n\
+Set Up : \n\
+  1) Connect the skeytek device via USB a port.\n\
+  2) Click Connect to start reading tags\n\
+  3) Scan the RFID tags \n\
+  4) Click Disconnect to disconnect \n\
+  5) Exit Menu Item to Close Program\n\
+  6) Help Menu Item to Open Help";
+
+	MessageBox(NULL, help, TEXT("HELP"), MB_OK);
 }
 
 void createGUI(HWND hwnd) {
@@ -171,8 +192,12 @@ void connectPort()
 
 void disconnectPort() {
 	readLoopOn = false;
+	clearDisplay(hwnd, &hwnd_yPos);
 	clearDisplay(tagDisplay,&tagDisplay_yPos);
 	clearDisplay(tagHistDisplay, nullptr);
+	UpdateWindow(hwnd);
+	WaitForSingleObject(hThread, 1000);
+	CloseHandle(hThread);
 	switchButtonEnabled(hDisconnectButton, hConnectButton);
 }
 
@@ -181,6 +206,7 @@ void displayTag(string tag)
 	DWORD xPos = 1;
 	TEXTMETRIC tm;
 	HDC hdc = GetDC(tagDisplay);
+	SetBkMode(hdc, TRANSPARENT);
 	GetTextMetrics(hdc, &tm);
 	DWORD yDiff = tm.tmHeight + tm.tmExternalLeading;
 	TextOut(hdc, xPos, tagDisplay_yPos, tag.c_str(), tag.length()); // output character    
@@ -193,11 +219,12 @@ void displayReader(string tag)
 	DWORD xPos = 3;
 	TEXTMETRIC tm;
 	HDC hdc = GetDC(hwnd);
+	SetBkMode(hdc, TRANSPARENT);
 	GetTextMetrics(hdc, &tm);
 	DWORD yDiff = tm.tmHeight + tm.tmExternalLeading;
 	TextOut(hdc, xPos, hwnd_yPos, tag.c_str(), tag.length()); // output character    
 	ReleaseDC(tagDisplay, hdc);
-	tagDisplay_yPos += (tm.tmHeight + tm.tmExternalLeading);
+	hwnd_yPos += (tm.tmHeight + tm.tmExternalLeading);
 }
 
 void addTagStrToHist(string tag) 
@@ -216,6 +243,7 @@ void repaintDisplayHist()
 	DWORD yPos = 0, xPos = 0;
 	TEXTMETRIC tm;
 	HDC hdc = GetDC(tagHistDisplay);
+	SetBkMode(hdc, TRANSPARENT);
 	GetTextMetrics(hdc, &tm);
 	DWORD yDiff = tm.tmHeight + tm.tmExternalLeading;
 	for (DWORD i = 0; i < tagHist.size() ; ++i)
@@ -226,30 +254,20 @@ void repaintDisplayHist()
 	ReleaseDC(tagHistDisplay, hdc);
 }
 
+void clearDisplay(HWND wnd, DWORD * yPos)
+{
+	InvalidateRect(wnd, NULL, TRUE);
+	UpdateWindow(wnd);
+	if (yPos != nullptr)
+	{
+		*yPos = 0;
+	}
+
+}
 
 void displayErrorMessageBox(LPCTSTR text)
 {
 	MessageBox(NULL, text, TEXT("ERROR"), MB_OK);
-}
-
-BOOLEAN connectRFID()
-{
-	numOfDevices = SkyeTek_DiscoverDevices(&devices);
-	displayTag("Discovering device...");
-	if (numOfDevices)
-	{
-		numOfReaders = SkyeTek_DiscoverReaders(devices, numOfDevices, &readers);
-		if (numOfReaders == 0)
-		{
-			SkyeTek_FreeDevices(devices, numOfDevices);
-			numOfDevices = 0;
-			return false;
-			displayTag("Cannot detect reader.");
-		}
-		return true; 
-	}
-	displayTag("Cannot detect device.");
-	return false;
 }
 
 void connect()
@@ -265,6 +283,29 @@ void connect()
 
 }
 
+BOOLEAN connectRFID()
+{
+	numOfDevices = SkyeTek_DiscoverDevices(&devices);
+	displayReader("Discovering device...");
+	if (numOfDevices)
+	{
+		numOfReaders = SkyeTek_DiscoverReaders(devices, numOfDevices, &readers);
+		if (numOfReaders == 0)
+		{
+			SkyeTek_FreeDevices(devices, numOfDevices);
+			numOfDevices = 0;
+			return false;
+			displayReader("Cannot detect reader.");
+		}
+		displayReader("Device Ready!");
+		return true; 
+	}
+	displayReader("Cannot detect device.");
+	return false;
+}
+
+
+
 DWORD WINAPI readLoop(LPVOID)
 {
 	while (readLoopOn)
@@ -274,7 +315,7 @@ DWORD WINAPI readLoop(LPVOID)
 		unsigned short numOfTags = 0;
 
 		status = SkyeTek_GetTags(readers[0], AUTO_DETECT, &lptags, &numOfTags);
-		if (numOfTags == 0 || status == SKYETEK_FAILURE)
+		if (numOfTags == 0 || status == SKYETEK_FAILURE )
 		{
 			clearDisplay(tagDisplay, &tagDisplay_yPos);
 		}
@@ -285,7 +326,6 @@ DWORD WINAPI readLoop(LPVOID)
 		status = SkyeTek_FreeTags(readers[0], lptags, numOfTags);
 	}
 	disconnect();
-	CloseHandle(hThread);
 	return readLoopOn;
 }
 unsigned char tagRead(LPSKYETEK_TAG lptag, void* user) 
@@ -394,22 +434,9 @@ string tagTypeToString(LPSKYETEK_TAG lpTag)
 
 void disconnect()
 {
-	clearDisplay(tagDisplay, &tagDisplay_yPos);
-	clearDisplay(tagHistDisplay, nullptr);
 	tagHist.clear();
 	SkyeTek_FreeReaders(readers, numOfReaders);
 	SkyeTek_FreeDevices(devices, numOfDevices);
-	disconnectPort();
 }
 
 
-void clearDisplay(HWND wnd, DWORD * yPos)
-{
-	InvalidateRect(wnd, NULL, TRUE);
-	UpdateWindow(wnd);
-	if (yPos != nullptr)
-	{
-		*yPos = 0;
-	}
-	
-}
