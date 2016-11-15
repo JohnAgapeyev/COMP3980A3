@@ -476,6 +476,22 @@ void addTagStrToHist(string tag)
 	
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: repaintDisplayHist
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 1.5
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void repaintDisplayHist (void)
+--
+-- NOTES:
+-- prints a history of tags found.  
+--------------------------------------------------------------------------*/
 void repaintDisplayHist()
 {
 	DWORD yPos = 0, xPos = 0;
@@ -498,6 +514,24 @@ void repaintDisplayHist()
 	ReleaseDC(tagHistDisplay, hdc);
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: [functionName]
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void clearDisplay(HWND wnd, DWORD * yPos)
+-- HWND 	the handle to the window to clear
+-- DWORD 	the address of the DWORD that keeps track of
+--  		the line that should be written to if this
+--			value is a nullptr, ignore the value  
+--
+--------------------------------------------------------------------------*/
 void clearDisplay(HWND wnd, DWORD * yPos)
 {
 	InvalidateRect(wnd, NULL, TRUE);
@@ -509,11 +543,52 @@ void clearDisplay(HWND wnd, DWORD * yPos)
 
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: displayErrorMessageBox
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 1.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void displayErrorMessageBox (LPCSTR)
+-- LPCTSTR 		Constant String value to represent message in pop up
+--
+-- NOTES:
+-- generic pop up box that indicates [text] error occuered. 
+-- the pop up header title is "ERROR"
+-- reused from A1
+--------------------------------------------------------------------------*/
 void displayErrorMessageBox(LPCTSTR text)
 {
 	MessageBox(NULL, text, TEXT("ERROR"), MB_OK);
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: connect
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: 
+-- Set Version 1.0 : no thread , async 
+-- Set Version 2.0 : implments a thread to  start read loop 
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: BOOLEAN connect (void)
+--
+-- RETURNS: 
+-- true if connection was succussful
+--
+-- NOTES:
+-- called by connect port. This is the entry point to the thread.
+-- RFID is connected via a seperate call. 
+--------------------------------------------------------------------------*/
 BOOLEAN connect()
 {
 	if (connectRFID()) {
@@ -532,6 +607,25 @@ BOOLEAN connect()
 	}
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: connectRFID
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: BOOLEAN connectRFID (void)
+--
+-- RETURNS: 
+-- true if the device connects successfully
+-- 
+-- NOTES:
+--  called by connect. searches for devices 
+--------------------------------------------------------------------------*/
 BOOLEAN connectRFID()
 {
 	numOfDevices = SkyeTek_DiscoverDevices(&devices);
@@ -553,6 +647,25 @@ BOOLEAN connectRFID()
 	return false;
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: [functionName]
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: DWORD WINAPI readLoop (LPVOID)
+-- please see the WIN32 API thread function pointer reference for details 
+--
+-- NOTES:
+-- this is the read loop intiated bythe thread. The loop will run continuouly  
+-- read tag is read to determins the number of tags discovered in the region
+-- select tags reads a single tag in the region 
+--------------------------------------------------------------------------*/
 DWORD WINAPI readLoop(LPVOID)
 {
 	while (readLoopOn)
@@ -562,9 +675,10 @@ DWORD WINAPI readLoop(LPVOID)
 		unsigned short numOfTags = 0;
 
 		status = SkyeTek_GetTags(readers[0], AUTO_DETECT, &lptags, &numOfTags);
-		if (numOfTags == 0 || status == SKYETEK_FAILURE )
+		if (numOfTags == 0 || status != SKYETEK_SUCCESS )
 		{
 			clearDisplay(tagDisplay, &tagDisplay_yPos);
+			displayTag("Cannot detect tags");
 		}
 		else
 		{
@@ -572,12 +686,39 @@ DWORD WINAPI readLoop(LPVOID)
 			string str = "Total Tags Found: " + numOfTags;
 			displayTag(str);
 			status = SkyeTek_SelectTags(readers[0], AUTO_DETECT, tagRead, 0, 1, NULL);
+			if (status != SKYETEK_SUCCESS )
+			{
+				clearDisplay(tagDisplay, &tagDisplay_yPos);
+				displayTag("Cannot select tag to read");
+			}
+
 		}
 		status = SkyeTek_FreeTags(readers[0], lptags, numOfTags);
 	}
 	disconnect();
 	return readLoopOn;
 }
+
+/*--------------------------------------------------------------------------
+-- FUNCTION: tagRead
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: unsigned char tagRead(LPSKYETEK_TAG , void* )
+-- calback function that is called by the selecttag call in readLoop  
+-- follows specifications of the "Select Tag "
+--
+-- RETURNS: 
+-- 
+-- NOTES:
+-- 
+--------------------------------------------------------------------------*/
 unsigned char tagRead(LPSKYETEK_TAG lptag, void* user) 
 {
 	stringstream ss;
@@ -602,6 +743,26 @@ unsigned char tagRead(LPSKYETEK_TAG lptag, void* user)
 	return 0;
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: ReadTagData
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: SKYETEK_STATUS ReadTagData (LPSKYETEK_TAG)
+-- LPSKYETEK_TAG 	The tag the has been selected 	
+--
+-- RETURNS: 
+-- the statsus of whether data could be read. 
+--
+-- NOTES:
+-- 
+--------------------------------------------------------------------------*/
 SKYETEK_STATUS ReadTagData(LPSKYETEK_TAG lpTag)
 {
 	unsigned short numOfTags = 0;
@@ -625,7 +786,30 @@ SKYETEK_STATUS ReadTagData(LPSKYETEK_TAG lpTag)
 	return SKYETEK_FAILURE;
 }
 
-
+/*--------------------------------------------------------------------------
+-- FUNCTION: getData
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: string GetData (LPSKYETEK_TAG)
+-- LPSKYETEK_TAG  	The pointer to the tag to be read
+--
+-- RETURNS: 
+-- string representing the data , if found between blocks 1-10 
+-- if no data was found string returned is empty
+--
+-- NOTES:
+--  This is the last of reading from a tag as part of the read loop
+-- this function reads the data in the tag and not just the type and identitifier
+-- the data from blocks 1 -10 is attempted to be read only block with data found is
+-- produced in the read
+--------------------------------------------------------------------------*/
 string GetData(LPSKYETEK_TAG lptag)
 {
 	DWORD start = 1;
@@ -656,10 +840,30 @@ string GetData(LPSKYETEK_TAG lptag)
 	return ss.str();
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: dataToString
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: string dataToString(LPSKYETEK_DATA)
+-- LPSKYETEK_TAG  	The pointer to the data to be read
+--
+-- RETURNS: 
+-- string of data in the block spefcified 
+--
+-- NOTES:
+-- a helper function for displaying
+--------------------------------------------------------------------------*/
 string dataToString(LPSKYETEK_DATA lpdata)
 {
 	stringstream ss;
-	for (int i = 1; i < (sizeof(SkyeTek_GetStringFromData(lpdata)) * 8); i += 2)
+	for (int i = 0; i < (sizeof(SkyeTek_GetStringFromData(lpdata)) * 16); i += 2)
 		{
 			ss << SkyeTek_GetStringFromData(lpdata) + i;
 		}
@@ -667,6 +871,26 @@ string dataToString(LPSKYETEK_DATA lpdata)
 	return ss.str();
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: dataToString
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: string dataToString(LPSKYETEK_DATA)
+-- LPSKYETEK_TAG  	The pointer to the data to be read
+--
+-- RETURNS: 
+-- string of data in the block spefcified 
+--
+-- NOTES:
+-- a helper function for displaying
+--------------------------------------------------------------------------*/
 string friendlyToString(LPSKYETEK_TAG lpTag)
 {
 	const DWORD friendlyLen = 128;
@@ -679,6 +903,26 @@ string friendlyToString(LPSKYETEK_TAG lpTag)
 	return ss.str();
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: tagTypeToString
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: string dataToString(LPSKYETEK_DATA)
+-- LPSKYETEK_TAG  	The pointer to the tag to be read
+--
+-- RETURNS: 
+-- string of tag type  
+--
+-- NOTES:
+-- a helper function for displaying
+--------------------------------------------------------------------------*/
 string tagTypeToString(LPSKYETEK_TAG lpTag)
 {
 	stringstream ss;
@@ -689,6 +933,23 @@ string tagTypeToString(LPSKYETEK_TAG lpTag)
 	return ss.str();
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: disconnect
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void disconnect (void)
+--
+-- NOTES:
+-- this is the final "disconnect" reached when the thread read 
+-- loop exits  
+--------------------------------------------------------------------------*/
 void disconnect()
 {
 	tagHist.clear();
