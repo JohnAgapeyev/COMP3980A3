@@ -148,7 +148,7 @@ unsigned char tagRead(LPSKYETEK_TAG, void* ); /*reads tags and outputs
 											  tag info and ID */
 SKYETEK_STATUS ReadTagData(LPSKYETEK_TAG);	 /*Outputs tagdata from 
 										      block 1 - 10 */
-void disconnect();				   /*frees the reader and device*/								
+void disconnect();				   /*frees the reader and device*/
 
 /*~~~~~~~~~~~~ TO STRING DISPLAY HELPERS ~~~~~~~~~~~~~~~~~~~~*/
 //To String functions to parse the 16-bit uncode null characters 

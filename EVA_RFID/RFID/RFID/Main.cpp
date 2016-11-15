@@ -413,7 +413,7 @@ void displayTag(string tag)
 	SetBkMode(hdc, TRANSPARENT);
 	GetTextMetrics(hdc, &tm);
 	DWORD yDiff = tm.tmHeight + tm.tmExternalLeading;
-	TextOut(hdc, xPos, tagDisplay_yPos, tag.c_str(), tag.length()); // output character    
+	TextOut(hdc, xPos, tagDisplay_yPos, tag.c_str(), tag.length()); // output character
 	ReleaseDC(tagDisplay, hdc);
 	tagDisplay_yPos += (tm.tmHeight + tm.tmExternalLeading);
 }
@@ -457,23 +457,24 @@ void displayReader(string tag)
 --
 -- DESIGNER: Eva Yu
 --
--- PROGRAMMER: Eva Yu
+-- PROGRAMMER: Eva Yu, John Agapeyev
 --
 -- INTERFACE: void addTagStrToHist(string tag) 
 -- string	string that represents a  tag in the format tag_id[tag_type]
 --
 -- NOTES:
 -- adds a tag to history of tags queue to be printed in history display
--- stores up to 15 tags in "history" queue
+-- stores up to 12 tags in "history" queue
 --------------------------------------------------------------------------*/
 void addTagStrToHist(string tag) 
 {
-	if (tagHist.size() >= 15)
+	if (tagHist.size() >= 12)
 	{
 		tagHist.pop_front();
 	}
-	tagHist.push_back(tag);
-	
+    if (!tag.empty()) {
+        tagHist.push_back(tag);
+    }
 }
 
 /*--------------------------------------------------------------------------
@@ -536,7 +537,7 @@ void clearDisplay(HWND wnd, DWORD * yPos)
 {
 	InvalidateRect(wnd, NULL, TRUE);
 	UpdateWindow(wnd);
-	if (yPos != nullptr)
+	if (yPos)
 	{
 		*yPos = 0;
 	}
@@ -680,7 +681,7 @@ DWORD WINAPI readLoop(LPVOID)
 		else
 		{
 			clearDisplay(tagDisplay, &tagDisplay_yPos);
-			string str = "Total Tags Found: " + numOfTags;
+			string str = "Total Tags Found: " + to_string(numOfTags);
 			displayTag(str);
 			status = SkyeTek_SelectTags(readers[0], AUTO_DETECT, tagRead, 0, 1, NULL);
 			if (status != SKYETEK_SUCCESS )
@@ -704,7 +705,7 @@ DWORD WINAPI readLoop(LPVOID)
 --
 -- DESIGNER: Eva Yu
 --
--- PROGRAMMER: Eva Yu
+-- PROGRAMMER: Eva Yu, John Agapeyev
 --
 -- INTERFACE: unsigned char tagRead(LPSKYETEK_TAG , void* )
 -- callback function that is called by the selecttag call in readLoop  
@@ -721,7 +722,7 @@ unsigned char tagRead(LPSKYETEK_TAG lptag, void* user)
 	string tagType = "";
 	string friendly = "";
 	displayTag("Reading Tag...");
-	if (lptag->type != NULL)
+	if (lptag && lptag->type)
 	{
 		friendly = friendlyToString(lptag);
 		tagType = tagTypeToString(lptag);
