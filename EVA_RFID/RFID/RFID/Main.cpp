@@ -45,7 +45,7 @@ std::string  dataToString(LPSKYETEK_DATA);
 -- Version 2.0 -- revised to use with Skyetek API, Event driven, w/ classes 
 -- Version 3.0 -- revised to use with Skyetek API, Async, removed classes 
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --
@@ -204,7 +204,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 -- REVISIONS: 
 -- Set Version 1.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --
@@ -335,7 +335,7 @@ void switchButtonEnabled(HWND enabledButton,
 --
 -- REVISIONS: Set Version 2.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --
@@ -347,7 +347,7 @@ void switchButtonEnabled(HWND enabledButton,
 void connectPort()
 {
 	clearDisplay(hwnd, &hwnd_yPos);
-	if ( connect() )
+	if (connect())
 	{
 		switchButtonEnabled(hConnectButton, hDisconnectButton);
 	}
@@ -375,7 +375,7 @@ void connectPort()
 --------------------------------------------------------------------------*/
 void disconnectPort() {
 	readLoopOn = false;
-	displayReader("Disconecting ... ")
+	displayReader("Disconnecting ... ");
 
 	clearDisplay(hwnd, &hwnd_yPos);
 	clearDisplay(tagDisplay,&tagDisplay_yPos);
@@ -394,7 +394,7 @@ void disconnectPort() {
 --
 -- REVISIONS: Set Version 1.5
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --
@@ -425,7 +425,7 @@ void displayTag(string tag)
 --
 -- REVISIONS: Set Version 1.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --
@@ -515,13 +515,13 @@ void repaintDisplayHist()
 }
 
 /*--------------------------------------------------------------------------
--- FUNCTION: [functionName]
+-- FUNCTION: clearDisplay
 --
 -- DATE: OCT. 05, 2016
 --
 -- REVISIONS: Set Version 2.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --
@@ -550,7 +550,7 @@ void clearDisplay(HWND wnd, DWORD * yPos)
 --
 -- REVISIONS: Set Version 1.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --
@@ -576,9 +576,9 @@ void displayErrorMessageBox(LPCTSTR text)
 -- Set Version 1.0 : no thread , async 
 -- Set Version 2.0 : implments a thread to  start read loop 
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
--- PROGRAMMER: Eva Yu
+-- PROGRAMMER: Eva Yu, John Agapeyev
 --
 -- INTERFACE: BOOLEAN connect (void)
 --
@@ -601,10 +601,7 @@ BOOLEAN connect()
 		}
 		return false;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 /*--------------------------------------------------------------------------
@@ -614,9 +611,9 @@ BOOLEAN connect()
 --
 -- REVISIONS: Set Version 2.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
--- PROGRAMMER: Eva Yu
+-- PROGRAMMER: Eva Yu, John Agapeyev
 --
 -- INTERFACE: BOOLEAN connectRFID (void)
 --
@@ -648,15 +645,15 @@ BOOLEAN connectRFID()
 }
 
 /*--------------------------------------------------------------------------
--- FUNCTION: [functionName]
+-- FUNCTION: readLoop
 --
 -- DATE: OCT. 05, 2016
 --
 -- REVISIONS: Set Version 2.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
--- PROGRAMMER: Eva Yu
+-- PROGRAMMER: Eva Yu, John Agapeyev
 --
 -- INTERFACE: DWORD WINAPI readLoop (LPVOID)
 -- please see the WIN32 API thread function pointer reference for details 
@@ -691,7 +688,6 @@ DWORD WINAPI readLoop(LPVOID)
 				clearDisplay(tagDisplay, &tagDisplay_yPos);
 				displayTag("Cannot select tag to read");
 			}
-
 		}
 		status = SkyeTek_FreeTags(readers[0], lptags, numOfTags);
 	}
@@ -711,7 +707,7 @@ DWORD WINAPI readLoop(LPVOID)
 -- PROGRAMMER: Eva Yu
 --
 -- INTERFACE: unsigned char tagRead(LPSKYETEK_TAG , void* )
--- calback function that is called by the selecttag call in readLoop  
+-- callback function that is called by the selecttag call in readLoop  
 -- follows specifications of the "Select Tag "
 --
 -- RETURNS: 
@@ -750,7 +746,7 @@ unsigned char tagRead(LPSKYETEK_TAG lptag, void* user)
 --
 -- REVISIONS: Set Version 2.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --
@@ -768,7 +764,6 @@ SKYETEK_STATUS ReadTagData(LPSKYETEK_TAG lpTag)
 	unsigned short numOfTags = 0;
 	string tag;
 	stringstream ss;
-
 
 	displayTag("Reading tag data ...");
 
@@ -847,7 +842,7 @@ string GetData(LPSKYETEK_TAG lptag)
 --
 -- REVISIONS: Set Version 2.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --
@@ -864,9 +859,9 @@ string dataToString(LPSKYETEK_DATA lpdata)
 {
 	stringstream ss;
 	for (int i = 0; i < (sizeof(SkyeTek_GetStringFromData(lpdata)) * 16); i += 2)
-		{
-			ss << SkyeTek_GetStringFromData(lpdata) + i;
-		}
+	{
+		ss << SkyeTek_GetStringFromData(lpdata) + i;
+	}
 	
 	return ss.str();
 }
@@ -910,7 +905,7 @@ string friendlyToString(LPSKYETEK_TAG lpTag)
 --
 -- REVISIONS: Set Version 2.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --
@@ -940,7 +935,7 @@ string tagTypeToString(LPSKYETEK_TAG lpTag)
 --
 -- REVISIONS: Set Version 2.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --

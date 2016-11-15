@@ -43,7 +43,7 @@ std::string  dataToString(LPSKYETEK_DATA);
 -- Version 2.0 -- revised to use with Skyetek API, Event driven, w/ classes 
 -- Version 3.0 -- revised to use with Skyetek API, Async, removed classes 
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
 -- PROGRAMMER: Eva Yu
 --
@@ -63,7 +63,7 @@ std::string  dataToString(LPSKYETEK_DATA);
 #include <tchar.h>
 
 /*~~~~~~~~~ SKYETEK ~~~~~~~~~~*/
-#include <platform.h>
+#include <Platform.h>
 #include <SkyetekProtocol.h>
 #include <SkyeTekAPI.h>
 /*~~~~~~~~~~ LOCAL ~~~~~~~~~~*/
