@@ -1,3 +1,58 @@
+/*------------------------------------------------------------------------------
+-- SOURCE FILE: main.cpp - header file for RFID COMP 3980 Assignment
+--
+-- PROGRAM: RFID.exe
+--
+-- FUNCTIONS:
+-- *list all functions here!* 
+----------------------------------------------------
+~~~~~~COMMAND FUNCTIONS~~~~~~
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+bool 			 setConfigParams(HWND, UINT, WPARAM, LPARAM);
+void		 	 createGUI(HWND);
+
+~~~~~~DISPLAY FUNCTIONS~~~~~~
+void		 	 switchButtonEnabled(HWND,HWND);
+void		 	 displayReader(std::string);	
+void		 	 displayTag(std::string);       
+void		 	 addTagStrToHist(std::string);  
+void		 	 repaintDisplayHist();			
+void		 	 clearDisplay(HWND, DWORD *);	 
+void		 	 displayErrorMessageBox(LPCTSTR); 
+void		 	 showHelp();					
+void		 	 connectPort(); 
+void		 	 disconnectPort(); 
+
+~~~~~~CONNECTED FUNCTIONS~~~~~~
+BOOLEAN 		 connect();						
+BOOLEAN 		 connectRFID();				
+DWORD WINAPI	 readLoop(LPVOID);		
+unsigned char	 tagRead(LPSKYETEK_TAG, void* ); 
+SKYETEK_STATUS   ReadTagData(LPSKYETEK_TAG);	 
+void 			 disconnect();				   
+
+~~~~~~DISPLAY HELP FUNCTIONS~~~~~~
+std::string  GetData(LPSKYETEK_TAG); 
+std::string  tagTypeToString(LPSKYETEK_TAG);
+std::string  friendlyToString(LPSKYETEK_TAG);
+std::string  dataToString(LPSKYETEK_DATA);
+----------------------------------------------------
+--
+-- DATE: NOV. 16, 2016
+--
+-- REVISIONS: 
+-- Version 1.0 -- attempting to implement without Skyetek API
+-- Version 2.0 -- revised to use with Skyetek API, Event driven, w/ classes 
+-- Version 3.0 -- revised to use with Skyetek API, Async, removed classes 
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- NOTES:
+-- see source code for detailed function descriptions
+------------------------------------------------------------------------------*/
+
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -5,6 +60,24 @@
 
 using namespace std;
 deque<string>  tagHist; //holds a history of tags
+
+/*--------------------------------------------------------------------------
+-- FUNCTION: WinMain
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 1.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: int WINAPI WinMain (HINSTANCE, HINSTANCE, LPSTR, int)
+-- refer to WIN32 API documentation for details
+--
+-- NOTES:
+-- Retrieved and changed from Assignment 1
+--------------------------------------------------------------------------*/
 
 int WINAPI WinMain(HINSTANCE hInst,
 				   HINSTANCE hPrevInst,
@@ -55,6 +128,23 @@ int WINAPI WinMain(HINSTANCE hInst,
 	return msg.wParam;
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: WndProc
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 1.5
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: LRESULT CALLBACK WndProc(HWND, UNIT, WPARAM, LPARAM)
+-- refer to WIN32 API documentation for details
+--
+-- NOTES:
+-- Retrieved and adopted from Assignment 1
+--------------------------------------------------------------------------*/
 LRESULT CALLBACK WndProc(HWND hwnd,
 						 UINT Message,
 						 WPARAM wParam,
@@ -105,6 +195,24 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 	}
 	return response;
 }
+
+/*--------------------------------------------------------------------------
+-- FUNCTION: showHelp
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: 
+-- Set Version 1.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void showHelp (void)
+--
+-- NOTES:
+-- shows a pop up help page
+--------------------------------------------------------------------------*/
 void showHelp()
 {
 	LPCSTR help = 
@@ -116,13 +224,30 @@ Set Up : \n\
   1) Connect the skeytek device via USB a port.\n\
   2) Click Connect to start reading tags\n\
   3) Scan the RFID tags \n\
-  4) Click Disconnect to disconnect \n\
+  4) Click Disconnect or the ESC key to disconnect \n\
   5) Exit Menu Item to Close Program\n\
   6) Help Menu Item to Open Help";
 
 	MessageBox(NULL, help, TEXT("HELP"), MB_OK);
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: createGui
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 1.5
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void [fucntionName] (HWND)
+-- HWND HandleTotheParentWindow
+--
+-- NOTES:
+-- Adopted and Adjusted from A1
+--------------------------------------------------------------------------*/
 void createGUI(HWND hwnd) {
 	tagDisplay = CreateWindow("STATIC",
 							  NULL,
@@ -177,30 +302,109 @@ void createGUI(HWND hwnd) {
 									 );
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: switchButtonEnabled
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 1.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void switchButtonEnabled (HWND, HWND)
+-- HWND handle to the Button that is currently enabled
+-- HWND handle to the Button that is currently disabled
+--
+-- NOTES:
+-- swaps two buttons so that the former 
+-- becomes diasabled and latter is enabled
+--------------------------------------------------------------------------*/
 void switchButtonEnabled(HWND enabledButton,
-									 HWND disabledButton)
+						 HWND disabledButton)
 {
 	EnableWindow(enabledButton, false);
 	EnableWindow(disabledButton, true);
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: connectPort
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void connectPort (void)
+-- 
+-- NOTES:
+-- the initial actor when "connect" button is clicked  
+--------------------------------------------------------------------------*/
 void connectPort()
 {
-	connect();
-	switchButtonEnabled(hConnectButton, hDisconnectButton);
+	clearDisplay(hwnd, &hwnd_yPos);
+	if ( connect() )
+	{
+		switchButtonEnabled(hConnectButton, hDisconnectButton);
+	}
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: disconnectPort
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 2.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void diconnectPort (void)
+--
+-- NOTES:
+-- the initial actor when the disconnect button is clicked
+-- function handles clearing displays and setting the flag to end
+-- the thread loop. 
+-- function will wait up to 3s for read thread to 
+-- complete before closing the handle
+--------------------------------------------------------------------------*/
 void disconnectPort() {
 	readLoopOn = false;
+	displayReader("Disconecting ... ")
+
 	clearDisplay(hwnd, &hwnd_yPos);
 	clearDisplay(tagDisplay,&tagDisplay_yPos);
 	clearDisplay(tagHistDisplay, nullptr);
 	UpdateWindow(hwnd);
-	WaitForSingleObject(hThread, 1000);
+
+	WaitForSingleObject(hThread, 3000);
 	CloseHandle(hThread);
 	switchButtonEnabled(hDisconnectButton, hConnectButton);
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: displayTag
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 1.5
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void displayTag (string)
+-- string 		the string to display into the "tags discovered" window
+--
+-- NOTES:
+-- displays a tag or string into the tags 
+-- discovered area with proper formatting
+--------------------------------------------------------------------------*/
 void displayTag(string tag)
 {
 	DWORD xPos = 1;
@@ -214,6 +418,23 @@ void displayTag(string tag)
 	tagDisplay_yPos += (tm.tmHeight + tm.tmExternalLeading);
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: displayReader
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 1.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void displayReader (string)
+-- string	takes the string to insert into main window
+--
+-- NOTES:
+-- Displays readers status
+--------------------------------------------------------------------------*/	
 void displayReader(string tag)
 {
 	DWORD xPos = 3;
@@ -227,6 +448,24 @@ void displayReader(string tag)
 	hwnd_yPos += (tm.tmHeight + tm.tmExternalLeading);
 }
 
+/*--------------------------------------------------------------------------
+-- FUNCTION: addTagStrToHist
+--
+-- DATE: OCT. 05, 2016
+--
+-- REVISIONS: Set Version 1.0
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- INTERFACE: void addTagStrToHist(string tag) 
+-- string	string that represents a  tag in the format tag_id[tag_type]
+--
+-- NOTES:
+-- adds a tag to history of tags queue to be printed in history display
+-- stores up to 15 tags in "history" queue
+--------------------------------------------------------------------------*/
 void addTagStrToHist(string tag) 
 {
 	if (tagHist.size() >= 15)
@@ -239,18 +478,23 @@ void addTagStrToHist(string tag)
 
 void repaintDisplayHist()
 {
-	InvalidateRect(tagHistDisplay, NULL, TRUE);
 	DWORD yPos = 0, xPos = 0;
 	TEXTMETRIC tm;
+
+	InvalidateRect(tagHistDisplay, NULL, TRUE);
+	UpdateWindow(tagHistDisplay);
+
 	HDC hdc = GetDC(tagHistDisplay);
 	SetBkMode(hdc, TRANSPARENT);
 	GetTextMetrics(hdc, &tm);
 	DWORD yDiff = tm.tmHeight + tm.tmExternalLeading;
+	
 	for (DWORD i = 0; i < tagHist.size() ; ++i)
 	{
 		TextOut(hdc, xPos, yPos, tagHist.at(i).c_str(), tagHist.at(i).length());
 		yPos += yDiff;
 	}
+	
 	ReleaseDC(tagHistDisplay, hdc);
 }
 
@@ -270,7 +514,7 @@ void displayErrorMessageBox(LPCTSTR text)
 	MessageBox(NULL, text, TEXT("ERROR"), MB_OK);
 }
 
-void connect()
+BOOLEAN connect()
 {
 	if (connectRFID()) {
 		DWORD threadID;
@@ -278,9 +522,14 @@ void connect()
 		{
 			readLoopOn = true;
 			hThread = CreateThread(NULL, 0, readLoop, nullptr, 0, &threadID);
+			return true;
 		}
+		return false;
 	}
-
+	else
+	{
+		return false;
+	}
 }
 
 BOOLEAN connectRFID()
@@ -294,17 +543,15 @@ BOOLEAN connectRFID()
 		{
 			SkyeTek_FreeDevices(devices, numOfDevices);
 			numOfDevices = 0;
-			return false;
 			displayReader("Cannot detect reader.");
+			return false;
 		}
-		displayReader("Device Ready!");
+		displayReader("Reader Ready!");
 		return true; 
 	}
 	displayReader("Cannot detect device.");
 	return false;
 }
-
-
 
 DWORD WINAPI readLoop(LPVOID)
 {
@@ -321,6 +568,9 @@ DWORD WINAPI readLoop(LPVOID)
 		}
 		else
 		{
+			clearDisplay(tagDisplay, &tagDisplay_yPos);
+			string str = "Total Tags Found: " + numOfTags;
+			displayTag(str);
 			status = SkyeTek_SelectTags(readers[0], AUTO_DETECT, tagRead, 0, 1, NULL);
 		}
 		status = SkyeTek_FreeTags(readers[0], lptags, numOfTags);
@@ -333,10 +583,17 @@ unsigned char tagRead(LPSKYETEK_TAG lptag, void* user)
 	stringstream ss;
 	string tagType = "";
 	string friendly = "";
-	friendly = friendlyToString(lptag);
-	tagType  = tagTypeToString(lptag);
-	
-	ss << "TAG :" <<  friendly  << " [" << tagType << "]";
+	displayTag("Reading Tag...");
+	if (lptag->type != NULL)
+	{
+		friendly = friendlyToString(lptag);
+		tagType = tagTypeToString(lptag);
+		ss << "Tag :" << friendly << " [" << tagType << "]";
+	}
+	else
+	{
+		displayTag("Error encountered reading tag");
+	}
 	
 	displayTag(ss.str());
 	addTagStrToHist(ss.str());
@@ -438,5 +695,3 @@ void disconnect()
 	SkyeTek_FreeReaders(readers, numOfReaders);
 	SkyeTek_FreeDevices(devices, numOfDevices);
 }
-
-

@@ -1,14 +1,67 @@
+/*------------------------------------------------------------------------------
+-- SOURCE FILE: main.h - header file for RFID COMP 3980 Assignment
+--
+-- PROGRAM: RFID.exe
+--
+-- FUNCTIONS:
+----------------------------------------------------
+~~~~~~COMMAND FUNCTIONS~~~~~~
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+bool 			 setConfigParams(HWND, UINT, WPARAM, LPARAM);
+void		 	 createGUI(HWND);
+
+~~~~~~DISPLAY FUNCTIONS~~~~~~
+void		 	 switchButtonEnabled(HWND,HWND);
+void		 	 displayReader(std::string);	
+void		 	 displayTag(std::string);       
+void		 	 addTagStrToHist(std::string);  
+void		 	 repaintDisplayHist();			
+void		 	 clearDisplay(HWND, DWORD *);	 
+void		 	 displayErrorMessageBox(LPCTSTR); 
+void		 	 showHelp();					
+void		 	 connectPort(); 
+void		 	 disconnectPort(); 
+
+~~~~~~CONNECTED FUNCTIONS~~~~~~
+BOOLEAN 		 connect();						
+BOOLEAN 		 connectRFID();				
+DWORD WINAPI	 readLoop(LPVOID);		
+unsigned char	 tagRead(LPSKYETEK_TAG, void* ); 
+SKYETEK_STATUS   ReadTagData(LPSKYETEK_TAG);	 
+void 			 disconnect();				   
+
+~~~~~~DISPLAY HELP FUNCTIONS~~~~~~
+std::string  GetData(LPSKYETEK_TAG); 
+std::string  tagTypeToString(LPSKYETEK_TAG);
+std::string  friendlyToString(LPSKYETEK_TAG);
+std::string  dataToString(LPSKYETEK_DATA);
+----------------------------------------------------
+-- DATE: NOV. 16, 2016
+--
+-- REVISIONS: 
+-- Version 1.0 -- attempting to implement without Skyetek API
+-- Version 2.0 -- revised to use with Skyetek API, Event driven, w/ classes 
+-- Version 3.0 -- revised to use with Skyetek API, Async, removed classes 
+--
+-- DESIGNER: Eva Yu
+--
+-- PROGRAMMER: Eva Yu
+--
+-- NOTES:
+-- see source code for detailed function descriptions
+------------------------------------------------------------------------------*/
 #pragma once
 
 /****************************************/
 /************** Headers *****************/
 /****************************************/
-/*~~~~~~~ ~WINDOWS/C++ ~~~~~~~*/
+/*~~~~~~~~ WINDOWS/C++ ~~~~~~~*/
 #include <Windows.h>
 #include <string>
 #include <sstream>
 #include <deque>
 #include <tchar.h>
+
 /*~~~~~~~~~ SKYETEK ~~~~~~~~~~*/
 #include <platform.h>
 #include <SkyetekProtocol.h>
@@ -40,7 +93,7 @@ const DWORD CONNECT_BUTTON_Y		= 250;
 /************* DATA MEMBERS *************/
 /****************************************/
 
-static BOOLEAN readLoopOn;
+static BOOLEAN readLoopOn = false;
 HANDLE hThread;
 
 /*~~~~~~~~ WINDOWS/VIEWS ~~~~~~~~*/
@@ -88,7 +141,7 @@ void connectPort(); /*Called on button clck to connects to
 					the device, changes the buttons*/
 void disconnectPort(); /*changes the flag to disconnect from
 					   the port and changes the buttons*/
-void connect();						/*Connects to the starts thread*/
+BOOLEAN connect();						/*Connects to the starts thread*/
 BOOLEAN connectRFID();				/*Connects to RFID device*/
 DWORD WINAPI readLoop(LPVOID);		/*the ASYNC thread loop to read tags*/
 unsigned char tagRead(LPSKYETEK_TAG, void* ); /*reads tags and outputs 
