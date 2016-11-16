@@ -122,9 +122,7 @@ int WINAPI WinMain(HINSTANCE hInst,
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
-
 	}
-
 	return msg.wParam;
 }
 
@@ -137,7 +135,7 @@ int WINAPI WinMain(HINSTANCE hInst,
 --
 -- DESIGNER: Eva Yu
 --
--- PROGRAMMER: Eva Yu
+-- PROGRAMMER: Eva Yu, John Agapeyev
 --
 -- INTERFACE: LRESULT CALLBACK WndProc(HWND, UNIT, WPARAM, LPARAM)
 -- refer to WIN32 API documentation for details
@@ -181,9 +179,9 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 	case WM_SYSKEYDOWN:
 	case WM_CHAR:
 	case WM_KEYDOWN:
-		if ((char)wParam == 27) // if ESC is pressed
+		if ((char)wParam == 27 && readLoopOn) // if ESC is pressed
 		{
-			disconnectPort();
+            disconnectPort();
 		}
 		break;
 	case WM_CLOSE:
@@ -217,7 +215,7 @@ void showHelp()
 {
 	LPCSTR help = 
 "Hardware Requirements:\n\
-  - Windows 10 64- bit OS\n\
+  - Windows 64-bit\n\
   - Skyetek RFID M7 or M9 device.\n\
 \n\
 Set Up : \n\
@@ -360,9 +358,9 @@ void connectPort()
 --
 -- REVISIONS: Set Version 2.0
 --
--- DESIGNER: Eva Yu
+-- DESIGNER: Eva Yu, John Agapeyev
 --
--- PROGRAMMER: Eva Yu
+-- PROGRAMMER: Eva Yu, John Agapeyev
 --
 -- INTERFACE: void diconnectPort (void)
 --
@@ -381,9 +379,11 @@ void disconnectPort() {
 	clearDisplay(tagDisplay,&tagDisplay_yPos);
 	clearDisplay(tagHistDisplay, nullptr);
 	UpdateWindow(hwnd);
-
-	WaitForSingleObject(hThread, 3000);
+    TerminateThread(hThread, 0);
 	CloseHandle(hThread);
+    if (devices && *devices) {
+        SkyeTek_CloseDevice(*devices);
+    }
 	switchButtonEnabled(hDisconnectButton, hConnectButton);
 }
 
@@ -942,7 +942,7 @@ string tagTypeToString(LPSKYETEK_TAG lpTag)
 -- INTERFACE: void disconnect (void)
 --
 -- NOTES:
--- this is the final "disconnect" reached when the thread read 
+-- this is the final "disconnect" reached when the thread read
 -- loop exits  
 --------------------------------------------------------------------------*/
 void disconnect()
