@@ -61,6 +61,7 @@ std::string  dataToString(LPSKYETEK_DATA);
 #include <sstream>
 #include <deque>
 #include <tchar.h>
+#include <vector>
 
 /*~~~~~~~~~ SKYETEK ~~~~~~~~~~*/
 #include <Platform.h>

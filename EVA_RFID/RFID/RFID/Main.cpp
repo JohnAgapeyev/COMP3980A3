@@ -749,7 +749,7 @@ unsigned char tagRead(LPSKYETEK_TAG lptag, void* user)
 --
 -- DESIGNER: Eva Yu, John Agapeyev
 --
--- PROGRAMMER: Eva Yu
+-- PROGRAMMER: Eva Yu, John Agapeyev
 --
 -- INTERFACE: SKYETEK_STATUS ReadTagData (LPSKYETEK_TAG)
 -- LPSKYETEK_TAG 	The tag the has been selected 	
@@ -763,22 +763,26 @@ unsigned char tagRead(LPSKYETEK_TAG lptag, void* user)
 SKYETEK_STATUS ReadTagData(LPSKYETEK_TAG lpTag)
 {
 	unsigned short numOfTags = 0;
-	string tag;
-	stringstream ss;
 
 	displayTag("Reading tag data ...");
 
 	string dataStr = GetData(lpTag);
 	if (!dataStr.empty())
 	{
-		ss << dataStr;
-		tag = ss.str();
-		displayTag(tag);
+        stringstream ss(dataStr);
+        vector<string> blocks;
+        string section;
+        while (getline(ss, section, '\n')) {
+            if (!section.empty()) {
+                blocks.push_back(section);
+            }
+        }
+        for (const auto& word : blocks) {
+            displayTag(word);
+        }
 		return SKYETEK_SUCCESS;
 	}
-	ss << " read failure.";
-	displayTag(ss.str());
-
+	displayTag(" read failure.");
 	return SKYETEK_FAILURE;
 }
 
@@ -791,7 +795,7 @@ SKYETEK_STATUS ReadTagData(LPSKYETEK_TAG lpTag)
 --
 -- DESIGNER: Eva Yu
 --
--- PROGRAMMER: Eva Yu
+-- PROGRAMMER: Eva Yu, John Agapeyev
 --
 -- INTERFACE: string GetData (LPSKYETEK_TAG)
 -- LPSKYETEK_TAG  	The pointer to the tag to be read
@@ -808,28 +812,23 @@ SKYETEK_STATUS ReadTagData(LPSKYETEK_TAG lpTag)
 --------------------------------------------------------------------------*/
 string GetData(LPSKYETEK_TAG lptag)
 {
-	DWORD start = 1;
+	DWORD start = 0;
 	SKYETEK_STATUS status;
 	LPSKYETEK_STRING str = nullptr;
-	LPSKYETEK_DATA lpdata = NULL;
+	LPSKYETEK_DATA lpdata = nullptr;
 	SKYETEK_ADDRESS addr;
 	stringstream ss;
 
 	addr.start  = start;
 	addr.blocks = 1;
-	while (addr.start < 10)
+	while (addr.start < 0x000F)
 	{
 		addr.start = ++start;
 		status = SkyeTek_ReadTagData(readers[0], lptag, &addr, 0, 0, &lpdata);
-		if (status == SKYETEK_SUCCESS)
+		if (status == SKYETEK_SUCCESS && SkyeTek_GetStringFromData(lpdata))
 		{
-			str = SkyeTek_GetStringFromData(lpdata);
-			
-			if (str != nullptr)
-			{
-				string dstring = dataToString(lpdata);
-				ss << " Block " << start << ": " << str;
-			}
+		    string dstring = dataToString(lpdata);
+		    ss << " Block " << start << ": " << dstring <<'\n';
 		}
 	}
 	SkyeTek_FreeData(lpdata);
@@ -845,7 +844,7 @@ string GetData(LPSKYETEK_TAG lptag)
 --
 -- DESIGNER: Eva Yu, John Agapeyev
 --
--- PROGRAMMER: Eva Yu
+-- PROGRAMMER: Eva Yu, John Agapeyev
 --
 -- INTERFACE: string dataToString(LPSKYETEK_DATA)
 -- LPSKYETEK_TAG  	The pointer to the data to be read
@@ -861,7 +860,7 @@ string dataToString(LPSKYETEK_DATA lpdata)
 	stringstream ss;
 	for (int i = 0; i < (sizeof(SkyeTek_GetStringFromData(lpdata)) * 16); i += 2)
 	{
-		ss << SkyeTek_GetStringFromData(lpdata) + i;
+		ss << *SkyeTek_GetStringFromData(lpdata);
 	}
 	
 	return ss.str();
