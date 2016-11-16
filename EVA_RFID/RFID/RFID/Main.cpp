@@ -88,9 +88,9 @@ int WINAPI WinMain(HINSTANCE hInst,
 
 	Wcl.cbSize = sizeof(WNDCLASSEX);
 	Wcl.style = CS_HREDRAW | CS_VREDRAW;
-	Wcl.hIcon = LoadIcon(NULL, IDI_APPLICATION); // large icon 
-	Wcl.hIconSm = NULL;                          // use small version of large icon
-	Wcl.hCursor = LoadCursor(NULL, IDC_ARROW);   // cursor style
+	Wcl.hIcon = LoadIcon(nullptr, IDI_APPLICATION); // large icon 
+	Wcl.hIconSm = nullptr;                          // use small version of large icon
+	Wcl.hCursor = LoadCursor(nullptr, IDC_ARROW);   // cursor style
 
 	Wcl.lpfnWndProc = WndProc;
 	Wcl.hInstance = hInst;
@@ -110,16 +110,16 @@ int WINAPI WinMain(HINSTANCE hInst,
 						WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, // not resizeable 
 						CW_USEDEFAULT, CW_USEDEFAULT, // starting x ,y positions
 						WIN_WIDTH, WIN_LENGTH, // 600 by 400 px 
-						NULL,
-						NULL, //menu bar
+						nullptr,
+						nullptr, //menu bar
 						hInst, // first aparam in WinMain
-						NULL);
+						nullptr);
 
 
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);
 
-	while (GetMessage(&msg, NULL, 0, 0)) {
+	while (GetMessage(&msg, nullptr, 0, 0)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
@@ -226,7 +226,7 @@ Set Up : \n\
   5) Exit Menu Item to Close Program\n\
   6) Help Menu Item to Open Help";
 
-	MessageBox(NULL, help, TEXT("HELP"), MB_OK);
+	MessageBox(nullptr, help, TEXT("HELP"), MB_OK);
 }
 
 /*--------------------------------------------------------------------------
@@ -248,29 +248,29 @@ Set Up : \n\
 --------------------------------------------------------------------------*/
 void createGUI(HWND hwnd) {
 	tagDisplay = CreateWindow("STATIC",
-							  NULL,
+							  nullptr,
 							  WS_BORDER | WS_CHILD | WS_VISIBLE | WS_DISABLED,
 							  TAG_DISPLAY_X,
 							  TAG_DISPLAY_Y,
 							  TEXTBOX_WIDTH,
 							  TEXTBOX_HEIGTH,
 							  hwnd,
-							  NULL,
-							  NULL,
-							  NULL
+							  nullptr,
+							  nullptr,
+							  nullptr
 							  );
 
 	tagHistDisplay = CreateWindow("STATIC",
-								  NULL,
+								  nullptr,
 								  WS_BORDER | WS_CHILD | WS_VISIBLE | WS_DISABLED,
 								  TAG_HISTORY_DISPLAY_X,
 								  TAG_HISTORY_DISPLAY_Y,
 								  TEXTBOX_WIDTH,
 								  TEXTBOX_HEIGTH,
 								  hwnd,
-								  NULL,
-								  NULL,
-								  NULL
+								  nullptr,
+								  nullptr,
+								  nullptr
 								  );
 
 	hConnectButton = CreateWindow("BUTTON",
@@ -281,9 +281,9 @@ void createGUI(HWND hwnd) {
 								  BUTTON_WIDTH,
 								  BUTTON_HEIGHT,
 								  hwnd,
-								  NULL,
-								  NULL,
-								  NULL
+								  nullptr,
+								  nullptr,
+								  nullptr
 								  );
 
 	hDisconnectButton = CreateWindow("BUTTON",
@@ -294,9 +294,9 @@ void createGUI(HWND hwnd) {
 									 BUTTON_WIDTH,
 									 BUTTON_HEIGHT,
 									 hwnd,
-									 NULL,
-									 NULL,
-									 NULL
+									 nullptr,
+									 nullptr,
+									 nullptr
 									 );
 }
 
@@ -498,7 +498,7 @@ void repaintDisplayHist()
 	DWORD yPos = 0, xPos = 0;
 	TEXTMETRIC tm;
 
-	InvalidateRect(tagHistDisplay, NULL, TRUE);
+	InvalidateRect(tagHistDisplay, nullptr, TRUE);
 	UpdateWindow(tagHistDisplay);
 
 	HDC hdc = GetDC(tagHistDisplay);
@@ -535,7 +535,7 @@ void repaintDisplayHist()
 --------------------------------------------------------------------------*/
 void clearDisplay(HWND wnd, DWORD * yPos)
 {
-	InvalidateRect(wnd, NULL, TRUE);
+	InvalidateRect(wnd, nullptr, TRUE);
 	UpdateWindow(wnd);
 	if (yPos)
 	{
@@ -565,7 +565,7 @@ void clearDisplay(HWND wnd, DWORD * yPos)
 --------------------------------------------------------------------------*/
 void displayErrorMessageBox(LPCTSTR text)
 {
-	MessageBox(NULL, text, TEXT("ERROR"), MB_OK);
+	MessageBox(nullptr, text, TEXT("ERROR"), MB_OK);
 }
 
 /*--------------------------------------------------------------------------
@@ -594,10 +594,10 @@ BOOLEAN connect()
 {
 	if (connectRFID()) {
 		DWORD threadID;
-		if (readers[0] != NULL)
+		if (readers[0] != nullptr)
 		{
 			readLoopOn = true;
-			hThread = CreateThread(NULL, 0, readLoop, nullptr, 0, &threadID);
+			hThread = CreateThread(nullptr, 0, readLoop, nullptr, 0, &threadID);
 			return true;
 		}
 		return false;
@@ -683,7 +683,7 @@ DWORD WINAPI readLoop(LPVOID)
 			clearDisplay(tagDisplay, &tagDisplay_yPos);
 			string str = "Total Tags Found: " + to_string(numOfTags);
 			displayTag(str);
-			status = SkyeTek_SelectTags(readers[0], AUTO_DETECT, tagRead, 0, 1, NULL);
+			status = SkyeTek_SelectTags(readers[0], AUTO_DETECT, tagRead, 0, 1, nullptr);
 			if (status != SKYETEK_SUCCESS )
 			{
 				clearDisplay(tagDisplay, &tagDisplay_yPos);
